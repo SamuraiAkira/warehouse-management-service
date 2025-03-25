@@ -2,10 +2,6 @@
 
 Микросервис для управления складами, товарами.
 
-![Go Version](https://img.shields.io/badge/Go-1.24+-blue)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-
 ## 📌 Особенности
 
 - Управление складами 
