@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -18,30 +20,50 @@ type HTTPConfig struct {
 }
 
 type PostgresConfig struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"db_name"`
-	SSLMode  string `yaml:"ssl_mode"`
+	Host           string `yaml:"host"`
+	Port           string `yaml:"port"`
+	Username       string `yaml:"username"`
+	Password       string `yaml:"password"`
+	DBName         string `yaml:"db_name"`
+	SSLMode        string `yaml:"ssl_mode"`
+	MaxConnections int    `yaml:"max_connections"`
 }
 
 func Load() (*Config, error) {
-	return &Config{
+	cfg := &Config{
 		HTTP: HTTPConfig{
-			Host:            "0.0.0.0",
-			Port:            "8080",
+			Host:            getEnv("HTTP_HOST", "0.0.0.0"),
+			Port:            getEnv("HTTP_PORT", "8080"),
 			ReadTimeout:     10 * time.Second,
 			WriteTimeout:    10 * time.Second,
 			ShutdownTimeout: 5 * time.Second,
 		},
 		Postgres: PostgresConfig{
-			Host:     "postgres",
-			Port:     "5432",
-			Username: "postgres",
-			Password: "postgres",
-			DBName:   "warehouse",
-			SSLMode:  "disable",
+			Host:           getEnv("DB_HOST", "postgres"),
+			Port:           getEnv("DB_PORT", "5432"),
+			Username:       getEnv("DB_USER", "postgres"),
+			Password:       getEnv("DB_PASSWORD", "postgres"),
+			DBName:         getEnv("DB_NAME", "warehouse"),
+			SSLMode:        getEnv("DB_SSLMODE", "disable"),
+			MaxConnections: getEnvAsInt("DB_MAX_CONN", 10),
 		},
-	}, nil
+	}
+
+	return cfg, nil
+}
+
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	if value, exists := os.LookupEnv(key); exists {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
 }
